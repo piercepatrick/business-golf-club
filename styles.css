@@ -5,7 +5,6 @@
   --text-serif: rgba(255, 255, 255, 0.949);
   --gold: #aa8d52;
   --gold-line: #aa8d52;
-  --hairline: rgba(255, 255, 255, 0.102);
   --btn-hover: #c7c7c7;
   --column: 55rem;
   --narrow: 37.625rem;
@@ -49,15 +48,15 @@ a {
 .page {
   width: min(var(--column), 100%);
   margin: 0 auto;
-  padding: var(--pad-y) var(--pad-x);
+  padding: 1.75rem var(--pad-x) var(--pad-y);
 }
 
 .logo {
   display: block;
-  width: 17.375rem;
-  max-width: 100%;
+  width: 9.5rem;
+  max-width: 72%;
   height: auto;
-  margin: 0 auto 6rem;
+  margin: 0 auto 1.25rem;
 }
 
 h1,
@@ -204,8 +203,6 @@ h1,
   margin: 8rem 0;
   margin-left: calc(50% - 50vw);
   padding: 0 var(--pad-x);
-  border-top: 1px solid var(--hairline);
-  border-bottom: 1px solid var(--hairline);
 }
 
 .band-inner {
@@ -218,40 +215,6 @@ h1,
   margin-bottom: var(--stack);
 }
 
-.proof {
-  width: min(33.625rem, 100%);
-  margin: 2.5rem auto 0;
-  padding: 1.25rem 1.1rem 1.4rem;
-  border-radius: 1rem;
-  background: #f4f1ea;
-  color: #1a1a1a;
-  text-align: left;
-}
-
-.proof-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.85rem;
-  color: #6d675d;
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.proof article + article {
-  margin-top: 0.85rem;
-  padding-top: 0.85rem;
-  border-top: 1px solid rgba(4, 0, 51, 0.08);
-}
-
-.proof-who {
-  display: flex;
-  gap: 0.65rem;
-  align-items: center;
-}
-
-.avatar,
 .member-photo {
   display: grid;
   place-items: center;
@@ -261,30 +224,6 @@ h1,
   color: #f3ead4;
   font-weight: 500;
   box-shadow: inset 0 0 0 1px rgba(170, 141, 82, 0.55);
-}
-
-.avatar {
-  width: 2rem;
-  height: 2rem;
-  font-size: 0.7rem;
-}
-
-.proof-who strong {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.proof-who span {
-  display: block;
-  color: #6d675d;
-  font-size: 0.68rem;
-}
-
-.proof p {
-  margin: 0.45rem 0 0;
-  font-size: 0.78rem;
-  line-height: 1.45;
 }
 
 .members,
@@ -423,7 +362,7 @@ h1,
   .page {
     --pad-x: 2.5rem;
     --pad-y: 5rem;
-    padding: var(--pad-y) var(--pad-x);
+    padding: 1.25rem var(--pad-x) var(--pad-y);
   }
 
   .display {
@@ -444,7 +383,7 @@ h1,
   }
 
   .logo {
-    margin-bottom: 4rem;
+    margin-bottom: 1.5rem;
   }
 
   .cta {

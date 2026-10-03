@@ -1,0 +1,8 @@
+{
+  "name": "business-golf-club",
+  "private": true,
+  "scripts": {
+    "dev": "node serve.js",
+    "build": "node build.js"
+  }
+}

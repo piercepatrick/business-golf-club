@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 200" role="img" aria-label="Business Golf Club">
+  <g fill="none" stroke="#AA8D52" stroke-width="1.4">
+    <circle cx="260" cy="58" r="28" />
+    <path d="M260 40v36" />
+    <path d="M260 44h16l-4 6 4 6h-16" fill="#AA8D52" stroke="none" />
+  </g>
+  <text x="260" y="128" text-anchor="middle" fill="#E8E8E8" font-family="Georgia, serif" font-size="28" letter-spacing="6">BUSINESS GOLF CLUB</text>
+  <text x="260" y="162" text-anchor="middle" fill="#AA8D52" font-family="Inter, sans-serif" font-size="13" letter-spacing="5">MEMBERSHIP</text>
+</svg>

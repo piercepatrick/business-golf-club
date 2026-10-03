@@ -1,0 +1,10 @@
+node_modules
+.git
+.wrangler
+dist
+build.js
+serve.js
+package.json
+wrangler.jsonc
+.gitignore
+.assetsignore

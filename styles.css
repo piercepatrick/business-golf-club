@@ -330,6 +330,60 @@ h1,
   font-size: 0.75em;
 }
 
+.legal-doc {
+  max-width: 40rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.legal-doc h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 2em;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.legal-doc .updated {
+  margin: 0.75rem 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.95em;
+  text-align: center;
+}
+
+.legal-doc h2 {
+  margin: 2.25rem 0 0.75rem;
+  color: #fff;
+  font-size: 1.15em;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+
+.legal-doc p,
+.legal-doc li {
+  margin: 0.9rem 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9em;
+  line-height: 1.7;
+}
+
+.legal-doc ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.legal-doc a {
+  color: inherit;
+}
+
+.legal-page .logo {
+  margin-bottom: 2.5rem;
+}
+
 @media (max-width: 1680px) {
   html {
     font-size: 15pt;

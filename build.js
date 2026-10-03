@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const files = ["index.html", "styles.css", "logo.png", "favicon.png"];
+const files = ["index.html", "terms.html", "privacy.html", "conduct.html", "styles.css", "logo.png", "favicon.png"];
 const out = path.join(__dirname, "dist");
 
 fs.rmSync(out, { recursive: true, force: true });

@@ -1,5 +1,5 @@
 const STATUSES = ["new", "contacted", "grouped"];
-const PROGRESS = ["all", "open", "payment", "not-ready"];
+const PROGRESS = ["all", "open", "payment", "paid", "not-ready"];
 
 const STEP_LABELS = {
   welcome: "Welcome",
@@ -45,7 +45,8 @@ async function tablePage(request, env, ensureSchema) {
   const where = [];
   const binds = [];
   if (progress === "open") where.push("completed = 0");
-  if (progress === "payment") where.push("outcome = 'payment'");
+  if (progress === "payment") where.push("outcome = 'payment' AND paid = 0");
+  if (progress === "paid") where.push("paid = 1");
   if (progress === "not-ready") where.push("outcome = 'not-ready'");
   if (status !== "all") {
     where.push("status = ?");
@@ -70,6 +71,7 @@ async function tablePage(request, env, ensureSchema) {
         ["all", "Everyone"],
         ["open", "Still filling out"],
         ["payment", "Reached payment"],
+        ["paid", "Paid"],
         ["not-ready", "Not ready"],
       ])}</label>
       <label>Status ${select("status", status, [["all", "Any status"], ...STATUSES.map((item) => [item, item])])}</label>
@@ -95,9 +97,13 @@ async function tablePage(request, env, ensureSchema) {
 
 function renderRow(row, filters) {
   const name = [row.first_name, row.last_name].filter(Boolean).join(" ") || "—";
-  const progress = row.completed
-    ? (row.outcome === "not-ready" ? "Not ready" : "Reached payment")
-    : `Stopped at ${STEP_LABELS[row.furthest_step] || row.furthest_step}`;
+  const progress = Number(row.paid) === 1
+    ? "Paid"
+    : row.outcome === "not-ready"
+      ? "Not ready"
+      : row.completed
+        ? "Reached payment"
+        : `Stopped at ${STEP_LABELS[row.furthest_step] || row.furthest_step}`;
   const back = `/admin?progress=${encodeURIComponent(filters.progress)}&status=${encodeURIComponent(filters.status)}&area=${encodeURIComponent(filters.area)}`;
   const statusField = `<form method="post" action="/admin/status">
     <input type="hidden" name="session_id" value="${escapeHtml(row.session_id)}" />
@@ -108,7 +114,7 @@ function renderRow(row, filters) {
     name,
     row.email,
     row.phone,
-    row.paid === 1 ? "Yes" : "No",
+    Number(row.paid) === 1 ? "Yes" : "No",
     statusField,
     progress,
     row.area,

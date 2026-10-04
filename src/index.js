@@ -1,3 +1,5 @@
+import { handleAdmin } from "./admin.js";
+
 const MAX_BODY = 32000;
 
 const STEP_IDS = new Set([
@@ -62,6 +64,9 @@ export default {
     if (url.pathname === "/api/application") {
       if (request.method === "POST") return saveApplication(request, env);
       return new Response("Method not allowed", { status: 405 });
+    }
+    if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
+      return handleAdmin(request, env, ensureSchema);
     }
     return env.ASSETS.fetch(request);
   },

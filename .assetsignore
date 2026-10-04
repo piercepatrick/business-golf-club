@@ -9,4 +9,5 @@ wrangler.jsonc
 .gitignore
 .assetsignore
 src
+migrations
 local-applications.json

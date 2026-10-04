@@ -19,28 +19,42 @@ const STEP_IDS = new Set([
   "not-ready",
 ]);
 
-const ANSWER_KEYS = [
-  "goals",
-  "gender",
-  "firstName",
-  "lastName",
-  "email",
-  "phone",
-  "company",
-  "title",
-  "area",
-  "drive",
-  "industry",
-  "work",
-  "stage",
-  "size",
-  "rounds",
-  "days",
-  "times",
-  "fees",
-  "interests",
-  "commitment",
-];
+const LIST_KEYS = ["goals", "days", "times", "fees", "interests"];
+
+const CREATE_TABLE = `CREATE TABLE IF NOT EXISTS applications (
+  session_id TEXT PRIMARY KEY,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  step_id TEXT NOT NULL,
+  step_number INTEGER NOT NULL,
+  furthest_step TEXT NOT NULL,
+  furthest_number INTEGER NOT NULL,
+  completed INTEGER NOT NULL DEFAULT 0,
+  outcome TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'new',
+  goals TEXT NOT NULL DEFAULT '[]',
+  gender TEXT NOT NULL DEFAULT '',
+  first_name TEXT NOT NULL DEFAULT '',
+  last_name TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL DEFAULT '',
+  phone TEXT NOT NULL DEFAULT '',
+  company TEXT NOT NULL DEFAULT '',
+  title TEXT NOT NULL DEFAULT '',
+  area TEXT NOT NULL DEFAULT '',
+  drive TEXT NOT NULL DEFAULT '',
+  industry TEXT NOT NULL DEFAULT '',
+  work TEXT NOT NULL DEFAULT '',
+  stage TEXT NOT NULL DEFAULT '',
+  size TEXT NOT NULL DEFAULT '',
+  rounds TEXT NOT NULL DEFAULT '',
+  days TEXT NOT NULL DEFAULT '[]',
+  times TEXT NOT NULL DEFAULT '[]',
+  fees TEXT NOT NULL DEFAULT '[]',
+  interests TEXT NOT NULL DEFAULT '[]',
+  commitment TEXT NOT NULL DEFAULT ''
+)`;
+
+let schemaReady = false;
 
 export default {
   async fetch(request, env) {
@@ -67,75 +81,118 @@ async function saveApplication(request, env) {
     return json({ error: "Invalid application" }, 400);
   }
 
-  const stepNumber = clampNumber(body.stepNumber, 0, 14);
-  const key = `session:${body.sessionId}`;
-  const existing = await env.APPLICATIONS.get(key, "json");
+  await ensureSchema(env);
+
+  const answers = sanitizeAnswers(body.answers);
+  const existing = await env.DB.prepare(
+    `SELECT created_at, furthest_number, furthest_step, completed, outcome, status
+     FROM applications WHERE session_id = ?`
+  ).bind(body.sessionId).first();
+
   const now = new Date().toISOString();
-  const previousFurthest = existing?.furthestNumber || 0;
+  const stepNumber = clampNumber(body.stepNumber, 0, 14);
+  const previousFurthest = existing?.furthest_number || 0;
   const furthestNumber = Math.max(previousFurthest, stepNumber);
-  const furthestStep = furthestNumber > previousFurthest || !existing?.furthestStep
+  const furthestStep = furthestNumber > previousFurthest || !existing?.furthest_step
     ? body.stepId
-    : existing.furthestStep;
-  const completed = Boolean(existing?.completed || body.completed);
-  const record = {
-    sessionId: body.sessionId,
-    stepId: body.stepId,
+    : existing.furthest_step;
+  const completed = existing?.completed === 1 || body.completed ? 1 : 0;
+  let outcome = existing?.outcome || "";
+  if (completed && body.stepId === "not-ready") outcome = "not-ready";
+  if (completed && body.stepId === "payment") outcome = "payment";
+
+  await env.DB.prepare(
+    `INSERT INTO applications (
+      session_id, created_at, updated_at, step_id, step_number, furthest_step, furthest_number,
+      completed, outcome, status,
+      goals, gender, first_name, last_name, email, phone, company, title,
+      area, drive, industry, work, stage, size, rounds, days, times, fees, interests, commitment
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(session_id) DO UPDATE SET
+      updated_at = excluded.updated_at,
+      step_id = excluded.step_id,
+      step_number = excluded.step_number,
+      furthest_step = excluded.furthest_step,
+      furthest_number = excluded.furthest_number,
+      completed = excluded.completed,
+      outcome = excluded.outcome,
+      goals = excluded.goals,
+      gender = excluded.gender,
+      first_name = excluded.first_name,
+      last_name = excluded.last_name,
+      email = excluded.email,
+      phone = excluded.phone,
+      company = excluded.company,
+      title = excluded.title,
+      area = excluded.area,
+      drive = excluded.drive,
+      industry = excluded.industry,
+      work = excluded.work,
+      stage = excluded.stage,
+      size = excluded.size,
+      rounds = excluded.rounds,
+      days = excluded.days,
+      times = excluded.times,
+      fees = excluded.fees,
+      interests = excluded.interests,
+      commitment = excluded.commitment`
+  ).bind(
+    body.sessionId,
+    existing?.created_at || now,
+    now,
+    body.stepId,
     stepNumber,
     furthestStep,
     furthestNumber,
     completed,
-    outcome: completed ? (body.stepId === "not-ready" || existing?.outcome === "not-ready" ? "not-ready" : "payment") : "",
-    answers: sanitizeAnswers(body.answers),
-    createdAt: existing?.createdAt || now,
-    updatedAt: now,
-  };
+    outcome,
+    existing?.status || "new",
+    listValue(answers, "goals"),
+    textValue(answers, "gender"),
+    textValue(answers, "firstName"),
+    textValue(answers, "lastName"),
+    textValue(answers, "email"),
+    textValue(answers, "phone"),
+    textValue(answers, "company"),
+    textValue(answers, "title"),
+    textValue(answers, "area"),
+    textValue(answers, "drive"),
+    textValue(answers, "industry"),
+    textValue(answers, "work"),
+    textValue(answers, "stage"),
+    textValue(answers, "size"),
+    textValue(answers, "rounds"),
+    listValue(answers, "days"),
+    listValue(answers, "times"),
+    listValue(answers, "fees"),
+    listValue(answers, "interests"),
+    textValue(answers, "commitment"),
+  ).run();
 
-  if (existing?.completed && existing.outcome) record.outcome = existing.outcome;
-  if (completed && body.stepId === "not-ready") record.outcome = "not-ready";
-  if (completed && body.stepId === "payment") record.outcome = "payment";
-
-  await env.APPLICATIONS.put(key, JSON.stringify(record));
-  await updateFunnel(env, existing, record, now);
   return new Response(null, { status: 204 });
 }
 
-async function updateFunnel(env, existing, record, now) {
-  const funnel = (await env.APPLICATIONS.get("funnel", "json")) || {
-    byFurthestStep: {},
-    finishedPayment: 0,
-    notReady: 0,
-  };
-
-  const nextStep = record.furthestStep;
-  if (!existing) {
-    addCount(funnel.byFurthestStep, nextStep, 1);
-  } else if (existing.furthestStep !== nextStep) {
-    addCount(funnel.byFurthestStep, existing.furthestStep, -1);
-    addCount(funnel.byFurthestStep, nextStep, 1);
-  }
-
-  if (!existing?.completed && record.completed) {
-    if (record.outcome === "not-ready") funnel.notReady += 1;
-    else funnel.finishedPayment += 1;
-  }
-
-  funnel.updatedAt = now;
-  await env.APPLICATIONS.put("funnel", JSON.stringify(funnel));
-}
-
-function addCount(counts, step, delta) {
-  const next = (counts[step] || 0) + delta;
-  if (next <= 0) delete counts[step];
-  else counts[step] = next;
+async function ensureSchema(env) {
+  if (schemaReady) return;
+  await env.DB.batch([
+    env.DB.prepare(CREATE_TABLE),
+    env.DB.prepare("CREATE INDEX IF NOT EXISTS applications_area_idx ON applications (area)"),
+    env.DB.prepare("CREATE INDEX IF NOT EXISTS applications_status_idx ON applications (status)"),
+    env.DB.prepare("CREATE INDEX IF NOT EXISTS applications_completed_idx ON applications (completed)"),
+  ]);
+  schemaReady = true;
 }
 
 function sanitizeAnswers(value) {
   const source = value && typeof value === "object" ? value : {};
   const answers = {};
-  for (const key of ANSWER_KEYS) {
+  for (const key of ["gender", "firstName", "lastName", "email", "phone", "company", "title", "area", "drive", "industry", "work", "stage", "size", "rounds", "commitment"]) {
     const item = source[key];
     if (typeof item === "string") answers[key] = item.slice(0, 2000);
-    else if (Array.isArray(item)) {
+  }
+  for (const key of LIST_KEYS) {
+    const item = source[key];
+    if (Array.isArray(item)) {
       answers[key] = item
         .filter((entry) => typeof entry === "string")
         .slice(0, 30)
@@ -143,6 +200,14 @@ function sanitizeAnswers(value) {
     }
   }
   return answers;
+}
+
+function textValue(answers, key) {
+  return answers[key] || "";
+}
+
+function listValue(answers, key) {
+  return JSON.stringify(answers[key] || []);
 }
 
 function clampNumber(value, min, max) {

@@ -522,7 +522,17 @@ document.addEventListener("keydown", (event) => {
 const returnedFromCheckout = new URLSearchParams(location.search).get("paid") === "1";
 if (returnedFromCheckout) {
   bar.style.width = "100%";
-  app.innerHTML = `<section class="step"><h1>You're in.</h1><p class="help">Your membership payment went through. We'll use the email from checkout to send your first round. You can cancel anytime from the receipt Stripe emails you.</p><div class="actions"><a class="pay" href="index.html">Back to the club</a></div></section>`;
+  app.innerHTML = `<section class="step">
+    <h1>You're in.</h1>
+    <p class="welcome">Welcome to Business Golf Club.</p>
+    <p class="help">Your membership is active, and we have everything we need to start matching you for upcoming rounds.</p>
+    <p class="next-label">What happens next:</p>
+    <p class="help">We'll review your preferences and reach out when we have a round that fits your schedule, location, budget, and golf preferences.</p>
+    <p class="help">You'll receive the course, tee time, and your group details before each round.</p>
+    <p class="help">Your first round is coming soon.</p>
+    <p class="help">Questions? Email us anytime at <a href="mailto:hello@businessgolf.club">hello@businessgolf.club</a>.</p>
+    <div class="actions"><a class="pay" href="index.html">Back to the club</a></div>
+  </section>`;
 } else {
   render();
   persist();

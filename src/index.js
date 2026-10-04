@@ -1,4 +1,5 @@
 import { handleAdmin } from "./admin.js";
+import { handleStripeWebhook } from "./stripe.js";
 
 const MAX_BODY = 32000;
 
@@ -65,6 +66,10 @@ export default {
       if (request.method === "POST") return saveApplication(request, env);
       return new Response("Method not allowed", { status: 405 });
     }
+    if (url.pathname === "/api/stripe/webhook") {
+      if (request.method === "POST") return handleStripeWebhook(request, env, ensureSchema);
+      return new Response("Method not allowed", { status: 405 });
+    }
     if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
       return handleAdmin(request, env, ensureSchema);
     }
@@ -121,26 +126,26 @@ async function saveApplication(request, env) {
       furthest_number = excluded.furthest_number,
       completed = excluded.completed,
       outcome = excluded.outcome,
-      goals = excluded.goals,
-      gender = excluded.gender,
-      first_name = excluded.first_name,
-      last_name = excluded.last_name,
-      email = excluded.email,
-      phone = excluded.phone,
-      company = excluded.company,
-      title = excluded.title,
-      area = excluded.area,
-      drive = excluded.drive,
-      industry = excluded.industry,
-      work = excluded.work,
-      stage = excluded.stage,
-      size = excluded.size,
-      rounds = excluded.rounds,
-      days = excluded.days,
-      times = excluded.times,
-      fees = excluded.fees,
-      interests = excluded.interests,
-      commitment = excluded.commitment`
+      goals = CASE WHEN excluded.goals != '[]' THEN excluded.goals ELSE applications.goals END,
+      gender = CASE WHEN excluded.gender != '' THEN excluded.gender ELSE applications.gender END,
+      first_name = CASE WHEN excluded.first_name != '' THEN excluded.first_name ELSE applications.first_name END,
+      last_name = CASE WHEN excluded.last_name != '' THEN excluded.last_name ELSE applications.last_name END,
+      email = CASE WHEN excluded.email != '' THEN excluded.email ELSE applications.email END,
+      phone = CASE WHEN excluded.phone != '' THEN excluded.phone ELSE applications.phone END,
+      company = CASE WHEN excluded.company != '' THEN excluded.company ELSE applications.company END,
+      title = CASE WHEN excluded.title != '' THEN excluded.title ELSE applications.title END,
+      area = CASE WHEN excluded.area != '' THEN excluded.area ELSE applications.area END,
+      drive = CASE WHEN excluded.drive != '' THEN excluded.drive ELSE applications.drive END,
+      industry = CASE WHEN excluded.industry != '' THEN excluded.industry ELSE applications.industry END,
+      work = CASE WHEN excluded.work != '' THEN excluded.work ELSE applications.work END,
+      stage = CASE WHEN excluded.stage != '' THEN excluded.stage ELSE applications.stage END,
+      size = CASE WHEN excluded.size != '' THEN excluded.size ELSE applications.size END,
+      rounds = CASE WHEN excluded.rounds != '' THEN excluded.rounds ELSE applications.rounds END,
+      days = CASE WHEN excluded.days != '[]' THEN excluded.days ELSE applications.days END,
+      times = CASE WHEN excluded.times != '[]' THEN excluded.times ELSE applications.times END,
+      fees = CASE WHEN excluded.fees != '[]' THEN excluded.fees ELSE applications.fees END,
+      interests = CASE WHEN excluded.interests != '[]' THEN excluded.interests ELSE applications.interests END,
+      commitment = CASE WHEN excluded.commitment != '' THEN excluded.commitment ELSE applications.commitment END`
   ).bind(
     body.sessionId,
     existing?.created_at || now,
@@ -185,7 +190,17 @@ async function ensureSchema(env) {
     env.DB.prepare("CREATE INDEX IF NOT EXISTS applications_status_idx ON applications (status)"),
     env.DB.prepare("CREATE INDEX IF NOT EXISTS applications_completed_idx ON applications (completed)"),
   ]);
+  await addColumn(env, "ALTER TABLE applications ADD COLUMN paid INTEGER NOT NULL DEFAULT 0");
+  await addColumn(env, "ALTER TABLE applications ADD COLUMN stripe_customer_id TEXT NOT NULL DEFAULT ''");
   schemaReady = true;
+}
+
+async function addColumn(env, sql) {
+  try {
+    await env.DB.prepare(sql).run();
+  } catch (error) {
+    if (!String(error).toLowerCase().includes("duplicate column")) throw error;
+  }
 }
 
 function sanitizeAnswers(value) {

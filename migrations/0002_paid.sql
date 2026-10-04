@@ -1,0 +1,2 @@
+ALTER TABLE applications ADD COLUMN paid INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE applications ADD COLUMN stripe_customer_id TEXT NOT NULL DEFAULT '';

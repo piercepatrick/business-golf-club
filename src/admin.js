@@ -81,12 +81,12 @@ async function tablePage(request, env, ensureSchema) {
     <div class="wrap">
       <table>
         <thead><tr>
-          <th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Progress</th>
+          <th>Name</th><th>Email</th><th>Phone</th><th>Paid</th><th>Status</th><th>Progress</th>
           <th>Area</th><th>Days</th><th>Times</th><th>Drive</th><th>Rounds</th>
           <th>Company</th><th>Title</th><th>Gender</th><th>Industry</th><th>Stage</th><th>Size</th>
           <th>Commitment</th><th>Goals</th><th>Green fees</th><th>Interests</th><th>What they do</th><th>Updated</th>
         </tr></thead>
-        <tbody>${body || `<tr><td colspan="22">No applications yet.</td></tr>`}</tbody>
+        <tbody>${body || `<tr><td colspan="23">No applications yet.</td></tr>`}</tbody>
       </table>
     </div>
   `);
@@ -108,6 +108,7 @@ function renderRow(row, filters) {
     name,
     row.email,
     row.phone,
+    row.paid === 1 ? "Yes" : "No",
     statusField,
     progress,
     row.area,
@@ -128,7 +129,7 @@ function renderRow(row, filters) {
     row.work,
     formatWhen(row.updated_at),
   ];
-  return `<tr>${cells.map((cell, index) => `<td${index === 3 ? "" : ""}>${index === 3 ? cell : escapeHtml(cell || "")}</td>`).join("")}</tr>`;
+  return `<tr>${cells.map((cell, index) => `<td>${index === 4 ? cell : escapeHtml(cell || "")}</td>`).join("")}</tr>`;
 }
 
 async function updateStatus(request, env, ensureSchema) {
@@ -289,7 +290,7 @@ function layout(title, body) {
     .wrap { overflow: auto; border: 1px solid #e4ddd0; border-radius: 12px; background: #fff; }
     table { border-collapse: collapse; min-width: 2200px; font-size: 13px; }
     th, td { padding: 8px 10px; border-bottom: 1px solid #eee; text-align: left; vertical-align: top; white-space: nowrap; }
-    td:nth-child(21) { white-space: normal; min-width: 16rem; }
+    td:nth-child(22) { white-space: normal; min-width: 16rem; }
     th { position: sticky; top: 0; background: #f3efe6; }
     td:first-child, th:first-child { position: sticky; left: 0; background: #fff; }
     th:first-child { background: #f3efe6; z-index: 1; }

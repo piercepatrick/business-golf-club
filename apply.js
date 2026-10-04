@@ -1,5 +1,5 @@
-// Paste the Stripe Payment Link here when it is ready.
-const CHECKOUT_URL = "";
+// Sandbox checkout for the $39/month founding membership. Replace with the live link before charging real cards.
+const CHECKOUT_URL = "https://buy.stripe.com/test_bJeeVccpVaLIgvva9Cebu00";
 
 const steps = [
   {
@@ -483,8 +483,9 @@ function wirePayment() {
       return;
     }
     const email = encodeURIComponent(answers.email || "");
+    const reference = encodeURIComponent(sessionId);
     const join = CHECKOUT_URL.includes("?") ? "&" : "?";
-    pay.href = `${CHECKOUT_URL}${join}prefilled_email=${email}`;
+    pay.href = `${CHECKOUT_URL}${join}prefilled_email=${email}&client_reference_id=${reference}`;
   });
 }
 
@@ -518,5 +519,11 @@ document.addEventListener("keydown", (event) => {
   goNext();
 });
 
-render();
-persist();
+const returnedFromCheckout = new URLSearchParams(location.search).get("paid") === "1";
+if (returnedFromCheckout) {
+  bar.style.width = "100%";
+  app.innerHTML = `<section class="step"><h1>You're in.</h1><p class="help">Your membership payment went through. We'll use the email from checkout to send your first round. You can cancel anytime from the receipt Stripe emails you.</p><div class="actions"><a class="pay" href="index.html">Back to the club</a></div></section>`;
+} else {
+  render();
+  persist();
+}

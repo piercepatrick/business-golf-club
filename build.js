@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const files = ["index.html", "terms.html", "privacy.html", "conduct.html", "styles.css", "logo.png", "favicon.png"];
+const files = ["index.html", "apply.html", "apply.css", "apply.js", "terms.html", "privacy.html", "conduct.html", "styles.css", "logo.png", "favicon.png"];
 const images = ["hero-1.jpg", "hero-2.jpg", "hero-3.jpg", "hero-4.jpg"];
 const out = path.join(__dirname, "dist");
 

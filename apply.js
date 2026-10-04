@@ -1,5 +1,5 @@
-// Sandbox checkout for the $39/month founding membership. Replace with the live link before charging real cards.
-const CHECKOUT_URL = "https://buy.stripe.com/test_bJeeVccpVaLIgvva9Cebu00";
+// Live checkout for the $39/month founding membership.
+const CHECKOUT_URL = "https://buy.stripe.com/00weVfdeb26C9C469Pbo400";
 
 const steps = [
   {

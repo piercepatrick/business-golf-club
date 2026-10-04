@@ -111,8 +111,16 @@ const steps = [
     id: "stage",
     number: 8,
     type: "single",
-    title: "What stage best describes your business or career?",
-    options: ["Pre-launch", "Under $100k", "$100k–$1M", "$1M+", "$10M+"],
+    cards: true,
+    title: "What stage is your business in?",
+    help: "This is so we can match you with people that run businesses of a similar size.",
+    options: [
+      "Pre-Launch or Ideation",
+      "Early stage (launch but <$100k rev)",
+      "Growth stage ($100k-$1M revenue)",
+      "Established ($1M+ revenue)",
+      "At Scale ($10M+ Revenue)",
+    ],
   },
   {
     id: "size",
@@ -240,7 +248,7 @@ function render() {
     ? `<button class="back" type="button" data-back>Back</button>`
     : "";
 
-  app.innerHTML = `${back}<section class="step">${body(step)}</section>`;
+  app.innerHTML = `${back}<section class="step${step.cards ? " cards-step" : ""}">${body(step)}</section>`;
   const field = app.querySelector("input, textarea");
   if (field) field.focus();
 }
@@ -280,8 +288,9 @@ function body(step) {
       const on = selected.has(option) ? " selected" : "";
       return `<button class="choice${on}" type="button" data-choice="${escapeHtml(option)}">${escapeHtml(option)}</button>`;
     }).join("");
-    const next = step.type === "multi" ? actions("Next") : "";
-    return `${kicker}<h1>${escapeHtml(step.title)}</h1>${hint}${help}<div class="choices">${choices}</div>${next}<p class="error" hidden></p>`;
+    const wrap = step.cards ? "cards" : "choices";
+    const next = step.type === "multi" || step.cards ? actions("Next") : "";
+    return `${kicker}<h1>${escapeHtml(step.title)}</h1>${hint}${help}<div class="${wrap}">${choices}</div>${next}<p class="error" hidden></p>`;
   }
 
   if (step.type === "contact") {
@@ -343,6 +352,13 @@ function choiceClick(button) {
       else selected.add(option);
       answers[key] = [...selected];
     }
+    render();
+    persist();
+    return;
+  }
+
+  if (step.type === "single" && step.cards) {
+    answers[step.id] = option;
     render();
     persist();
     return;
@@ -416,6 +432,10 @@ function valid() {
       return false;
     }
     return true;
+  }
+  if (step.cards && !answers[step.id]) {
+    showError("Choose the stage that fits.");
+    return false;
   }
   return true;
 }
@@ -514,7 +534,7 @@ document.addEventListener("keydown", (event) => {
   if (event.key !== "Enter" || event.shiftKey) return;
   if (event.target.tagName === "TEXTAREA") return;
   const step = steps[index];
-  if (!step || step.type === "payment" || step.type === "done" || step.type === "single") return;
+  if (!step || step.type === "payment" || step.type === "done" || (step.type === "single" && !step.cards)) return;
   event.preventDefault();
   goNext();
 });

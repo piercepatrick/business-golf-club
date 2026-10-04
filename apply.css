@@ -167,6 +167,54 @@ button:disabled {
   gap: 0.65rem;
 }
 
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  max-width: 34rem;
+  margin: 1.4rem 0 0;
+}
+
+.cards .choice {
+  width: 7.4rem;
+  min-height: 7.4rem;
+  justify-content: center;
+  padding: 0.7rem 0.55rem;
+  border-color: #161616;
+  border-radius: 2px;
+  background: #e4dfd4;
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+.cards .choice.selected {
+  background: #d4cec1;
+  box-shadow: inset 0 0 0 1px #161616;
+}
+
+.cards-step {
+  text-align: left;
+}
+
+.cards-step h1 {
+  font-size: clamp(1.45rem, 3vw, 1.85rem);
+}
+
+.cards-step .help {
+  margin-left: 0;
+  margin-right: 0;
+  font-size: 0.98rem;
+  text-align: left;
+}
+
+.cards-step .actions {
+  justify-content: flex-start;
+}
+
+.cards-step .hint {
+  display: none;
+}
+
 .choice {
   display: flex;
   align-items: center;

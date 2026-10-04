@@ -194,11 +194,10 @@ const steps = [
     id: "commitment",
     number: 13,
     type: "single",
-    title: "Are you willing to play at least 1–2 Business Golf Club rounds per month?",
+    title: "Are you willing to commit to playing 1–2 golf rounds with other business owners each month?",
     options: [
       "Yes — I'd love to be an active member.",
-      "Probably, depending on my schedule.",
-      "No — I'm not ready to join yet.",
+      "No, and because I can't commit to being an active member I won't apply right now.",
     ],
   },
   {

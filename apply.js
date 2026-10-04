@@ -264,7 +264,7 @@ function body(step) {
   if (step.type === "payment") {
     return `
       <h1>Click below to finalize your payment and secure your spot in Business Golf Club.</h1>
-      <p class="help">Please use the same email for payment as the one you used on this form. After you join, we’ll match you with a small group in Greater Phoenix and send the course and tee time. The button will take you to our secure Stripe checkout page. Cancel anytime.</p>
+      <p class="help"><strong>Please use the same email for payment as the one you used on this form.</strong> After you join, we’ll match you with a small group in Greater Phoenix and send the course and tee time. The button will take you to our secure Stripe checkout page. Cancel anytime.</p>
       <div class="actions"><a class="pay" id="pay" href="#">Complete Payment →</a></div>
     `;
   }

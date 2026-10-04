@@ -109,6 +109,11 @@ h1 {
   color: inherit;
 }
 
+.help strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
 .actions {
   display: flex;
   gap: 0.85rem;

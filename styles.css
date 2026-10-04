@@ -329,6 +329,10 @@ h1,
   text-decoration: none;
 }
 
+.faq a {
+  text-decoration: underline;
+}
+
 .fine {
   font-size: 0.75em;
 }

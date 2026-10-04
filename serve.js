@@ -18,6 +18,31 @@ const types = {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://localhost:${port}`);
+  if (url.pathname === "/api/application" && req.method === "POST") {
+    const chunks = [];
+    req.on("data", (chunk) => chunks.push(chunk));
+    req.on("end", () => {
+      const file = path.join(root, "local-applications.json");
+      let saved = {};
+      try {
+        saved = JSON.parse(fs.readFileSync(file, "utf8"));
+      } catch {
+        saved = {};
+      }
+      try {
+        const body = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+        saved[body.sessionId] = body;
+        fs.writeFileSync(file, JSON.stringify(saved, null, 2));
+        res.writeHead(204);
+        res.end();
+      } catch {
+        res.writeHead(400);
+        res.end("Bad request");
+      }
+    });
+    return;
+  }
+
   let pathname = decodeURIComponent(url.pathname);
   if (pathname.endsWith("/")) pathname += "index.html";
 

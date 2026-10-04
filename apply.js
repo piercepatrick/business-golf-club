@@ -207,6 +207,14 @@ const steps = [
 
 const answers = {};
 let index = 0;
+let saveTimer = 0;
+
+const SESSION_KEY = "bgc-session";
+let sessionId = localStorage.getItem(SESSION_KEY);
+if (!sessionId) {
+  sessionId = crypto.randomUUID();
+  localStorage.setItem(SESSION_KEY, sessionId);
+}
 
 const app = document.getElementById("app");
 const bar = document.querySelector("#progress span");
@@ -336,6 +344,7 @@ function choiceClick(button) {
       answers[key] = [...selected];
     }
     render();
+    persist();
     return;
   }
 
@@ -350,6 +359,7 @@ function choiceClick(button) {
   else selected.add(option);
   answers[step.id] = [...selected];
   render();
+  persist();
 }
 
 function readFields() {
@@ -412,16 +422,51 @@ function valid() {
 
 function goNext() {
   const step = steps[index];
-  if (!valid()) return;
+  if (!valid()) {
+    persist();
+    return;
+  }
   if (step.id === "commitment" && String(answers.commitment).startsWith("No")) {
     index = steps.findIndex((item) => item.id === "not-ready");
     render();
+    persist();
     return;
   }
   index += 1;
   if (steps[index] && steps[index].id === "payment") saveApplication();
   render();
+  persist();
   if (steps[index] && steps[index].id === "payment") wirePayment();
+}
+
+function snapshot() {
+  readFields();
+  const step = steps[index];
+  const stepNumber = step.number || (step.id === "payment" || step.id === "not-ready" ? 14 : 0);
+  return {
+    sessionId,
+    stepId: step.id,
+    stepNumber,
+    completed: step.id === "payment" || step.id === "not-ready",
+    answers,
+  };
+}
+
+function persist() {
+  const body = JSON.stringify(snapshot());
+  const blob = new Blob([body], { type: "application/json" });
+  if (navigator.sendBeacon && navigator.sendBeacon("/api/application", blob)) return;
+  fetch("/api/application", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body,
+    keepalive: true,
+  }).catch(() => {});
+}
+
+function persistSoon() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(persist, 400);
 }
 
 function saveApplication() {
@@ -457,8 +502,12 @@ app.addEventListener("click", (event) => {
       index -= 1;
     }
     render();
+    persist();
   }
 });
+
+app.addEventListener("input", persistSoon);
+window.addEventListener("pagehide", persist);
 
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Enter" || event.shiftKey) return;
@@ -470,3 +519,4 @@ document.addEventListener("keydown", (event) => {
 });
 
 render();
+persist();

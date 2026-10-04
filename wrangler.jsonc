@@ -1,7 +1,16 @@
 {
   "name": "business-golf-club",
   "compatibility_date": "2026-10-03",
+  "main": "src/index.js",
   "assets": {
-    "directory": "."
-  }
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "kv_namespaces": [
+    {
+      "binding": "APPLICATIONS",
+      "id": "901fa5db2f194281a1f9f384c021a9d3"
+    }
+  ]
 }

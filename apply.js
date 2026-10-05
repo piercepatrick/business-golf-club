@@ -488,6 +488,11 @@ function persistSoon() {
   saveTimer = setTimeout(persist, 400);
 }
 
+function track(eventName, params) {
+  if (typeof fbq !== "function") return;
+  fbq("track", eventName, params);
+}
+
 function saveApplication() {
   const payload = { ...answers, submittedAt: new Date().toISOString() };
   localStorage.setItem("bgc-application", JSON.stringify(payload));
@@ -505,6 +510,7 @@ function wirePayment() {
     const reference = encodeURIComponent(sessionId);
     const join = CHECKOUT_URL.includes("?") ? "&" : "?";
     pay.href = `${CHECKOUT_URL}${join}prefilled_email=${email}&client_reference_id=${reference}`;
+    track("InitiateCheckout", { value: 39, currency: "USD" });
   });
 }
 
@@ -552,6 +558,10 @@ if (returnedFromCheckout) {
     <p class="help">Questions? Email us anytime at <a href="mailto:hello@businessgolf.club">hello@businessgolf.club</a>.</p>
     <div class="actions"><a class="pay" href="index.html">Back to the club</a></div>
   </section>`;
+  if (!sessionStorage.getItem("bgc-purchase-tracked")) {
+    track("Purchase", { value: 39, currency: "USD" });
+    sessionStorage.setItem("bgc-purchase-tracked", "1");
+  }
 } else {
   render();
   persist();

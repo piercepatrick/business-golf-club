@@ -452,7 +452,13 @@ function goNext() {
     return;
   }
   index += 1;
-  if (steps[index] && steps[index].id === "payment") saveApplication();
+  if (steps[index] && steps[index].id === "payment") {
+    saveApplication();
+    if (!sessionStorage.getItem("bgc-qualified-tracked")) {
+      trackCustom("Qualified_Applicant");
+      sessionStorage.setItem("bgc-qualified-tracked", "1");
+    }
+  }
   render();
   persist();
   if (steps[index] && steps[index].id === "payment") wirePayment();
@@ -491,6 +497,11 @@ function persistSoon() {
 function track(eventName, params) {
   if (typeof fbq !== "function") return;
   fbq("track", eventName, params);
+}
+
+function trackCustom(eventName) {
+  if (typeof fbq !== "function") return;
+  fbq("trackCustom", eventName);
 }
 
 function saveApplication() {

@@ -35,8 +35,15 @@ const steps = [
     options: ["Male", "Female"],
   },
   {
-    id: "contact",
+    id: "age",
     number: 3,
+    type: "single",
+    title: "What's your age range?",
+    options: ["18–24", "25–34", "35–44", "45–54", "55–64", "65+"],
+  },
+  {
+    id: "contact",
+    number: 4,
     type: "contact",
     title: "Contact information",
     help: "Please enter your contact information. We use this to send invitations and details for your rounds. Please make sure your email and phone number are accurate.",
@@ -51,7 +58,7 @@ const steps = [
   },
   {
     id: "area",
-    number: 4,
+    number: 5,
     type: "single",
     title: "What area of Greater Phoenix are you based in?",
     options: [
@@ -69,7 +76,7 @@ const steps = [
   },
   {
     id: "drive",
-    number: 5,
+    number: 6,
     type: "single",
     title: "How far are you willing to drive for a round?",
     options: [
@@ -82,7 +89,7 @@ const steps = [
   },
   {
     id: "industry",
-    number: 6,
+    number: 7,
     type: "single",
     title: "What is your primary industry?",
     options: [
@@ -101,7 +108,7 @@ const steps = [
   },
   {
     id: "work",
-    number: 7,
+    number: 8,
     type: "text",
     title: "Tell us briefly what you do.",
     help: "Example: “I own a 12-person digital marketing agency serving home-service businesses.”",
@@ -109,7 +116,7 @@ const steps = [
   },
   {
     id: "stage",
-    number: 8,
+    number: 9,
     type: "single",
     cards: true,
     title: "What stage is your business in?",
@@ -124,7 +131,7 @@ const steps = [
   },
   {
     id: "size",
-    number: 9,
+    number: 10,
     type: "single",
     title: "How big is your company?",
     help: "If you are between roles or this does not apply cleanly, pick the closest fit.",
@@ -132,7 +139,7 @@ const steps = [
   },
   {
     id: "schedule",
-    number: 10,
+    number: 11,
     type: "schedule",
     title: "When and how do you like to play?",
     groups: [
@@ -160,7 +167,7 @@ const steps = [
   },
   {
     id: "fees",
-    number: 11,
+    number: 12,
     type: "multi",
     title: "What green-fee range are you generally comfortable with?",
     hint: "Select all that apply",
@@ -168,7 +175,7 @@ const steps = [
   },
   {
     id: "interests",
-    number: 12,
+    number: 13,
     type: "multi",
     title: "What are you interested in outside of work and golf?",
     hint: "Select all that apply",
@@ -192,7 +199,7 @@ const steps = [
   },
   {
     id: "commitment",
-    number: 13,
+    number: 14,
     type: "single",
     title: "Are you willing to commit to playing 1–2 golf rounds with other business owners each month?",
     options: [
@@ -467,7 +474,7 @@ function goNext() {
 function snapshot() {
   readFields();
   const step = steps[index];
-  const stepNumber = step.number || (step.id === "payment" || step.id === "not-ready" ? 14 : 0);
+  const stepNumber = step.number || (step.id === "payment" || step.id === "not-ready" ? 15 : 0);
   return {
     sessionId,
     stepId: step.id,

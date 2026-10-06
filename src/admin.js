@@ -5,6 +5,7 @@ const STEP_LABELS = {
   welcome: "Welcome",
   goals: "Goals",
   gender: "Gender",
+  age: "Age",
   contact: "Contact",
   area: "Area",
   drive: "Drive time",
@@ -85,10 +86,10 @@ async function tablePage(request, env, ensureSchema) {
         <thead><tr>
           <th>Name</th><th>Email</th><th>Phone</th><th>Paid</th><th>Status</th><th>Progress</th>
           <th>Area</th><th>Days</th><th>Times</th><th>Drive</th><th>Rounds</th>
-          <th>Company</th><th>Title</th><th>Gender</th><th>Industry</th><th>Stage</th><th>Size</th>
+          <th>Company</th><th>Title</th><th>Gender</th><th>Age</th><th>Industry</th><th>Stage</th><th>Size</th>
           <th>Commitment</th><th>Goals</th><th>Green fees</th><th>Interests</th><th>What they do</th><th>Updated</th>
         </tr></thead>
-        <tbody>${body || `<tr><td colspan="23">No applications yet.</td></tr>`}</tbody>
+        <tbody>${body || `<tr><td colspan="24">No applications yet.</td></tr>`}</tbody>
       </table>
     </div>
   `);
@@ -125,6 +126,7 @@ function renderRow(row, filters) {
     row.company,
     row.title,
     row.gender,
+    row.age,
     row.industry,
     row.stage,
     row.size,

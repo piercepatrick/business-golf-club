@@ -7,6 +7,7 @@ const STEP_IDS = new Set([
   "welcome",
   "goals",
   "gender",
+  "age",
   "contact",
   "area",
   "drive",
@@ -37,6 +38,7 @@ const CREATE_TABLE = `CREATE TABLE IF NOT EXISTS applications (
   status TEXT NOT NULL DEFAULT 'new',
   goals TEXT NOT NULL DEFAULT '[]',
   gender TEXT NOT NULL DEFAULT '',
+  age TEXT NOT NULL DEFAULT '',
   first_name TEXT NOT NULL DEFAULT '',
   last_name TEXT NOT NULL DEFAULT '',
   email TEXT NOT NULL DEFAULT '',
@@ -100,7 +102,7 @@ async function saveApplication(request, env) {
   ).bind(body.sessionId).first();
 
   const now = new Date().toISOString();
-  const stepNumber = clampNumber(body.stepNumber, 0, 14);
+  const stepNumber = clampNumber(body.stepNumber, 0, 15);
   const previousFurthest = existing?.furthest_number || 0;
   const furthestNumber = Math.max(previousFurthest, stepNumber);
   const furthestStep = furthestNumber > previousFurthest || !existing?.furthest_step
@@ -115,9 +117,9 @@ async function saveApplication(request, env) {
     `INSERT INTO applications (
       session_id, created_at, updated_at, step_id, step_number, furthest_step, furthest_number,
       completed, outcome, status,
-      goals, gender, first_name, last_name, email, phone, company, title,
+      goals, gender, age, first_name, last_name, email, phone, company, title,
       area, drive, industry, work, stage, size, rounds, days, times, fees, interests, commitment
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(session_id) DO UPDATE SET
       updated_at = excluded.updated_at,
       step_id = excluded.step_id,
@@ -128,6 +130,7 @@ async function saveApplication(request, env) {
       outcome = excluded.outcome,
       goals = CASE WHEN excluded.goals != '[]' THEN excluded.goals ELSE applications.goals END,
       gender = CASE WHEN excluded.gender != '' THEN excluded.gender ELSE applications.gender END,
+      age = CASE WHEN excluded.age != '' THEN excluded.age ELSE applications.age END,
       first_name = CASE WHEN excluded.first_name != '' THEN excluded.first_name ELSE applications.first_name END,
       last_name = CASE WHEN excluded.last_name != '' THEN excluded.last_name ELSE applications.last_name END,
       email = CASE WHEN excluded.email != '' THEN excluded.email ELSE applications.email END,
@@ -159,6 +162,7 @@ async function saveApplication(request, env) {
     existing?.status || "new",
     listValue(answers, "goals"),
     textValue(answers, "gender"),
+    textValue(answers, "age"),
     textValue(answers, "firstName"),
     textValue(answers, "lastName"),
     textValue(answers, "email"),
@@ -192,6 +196,7 @@ async function ensureSchema(env) {
   ]);
   await addColumn(env, "ALTER TABLE applications ADD COLUMN paid INTEGER NOT NULL DEFAULT 0");
   await addColumn(env, "ALTER TABLE applications ADD COLUMN stripe_customer_id TEXT NOT NULL DEFAULT ''");
+  await addColumn(env, "ALTER TABLE applications ADD COLUMN age TEXT NOT NULL DEFAULT ''");
   schemaReady = true;
 }
 
@@ -206,7 +211,7 @@ async function addColumn(env, sql) {
 function sanitizeAnswers(value) {
   const source = value && typeof value === "object" ? value : {};
   const answers = {};
-  for (const key of ["gender", "firstName", "lastName", "email", "phone", "company", "title", "area", "drive", "industry", "work", "stage", "size", "rounds", "commitment"]) {
+  for (const key of ["gender", "age", "firstName", "lastName", "email", "phone", "company", "title", "area", "drive", "industry", "work", "stage", "size", "rounds", "commitment"]) {
     const item = source[key];
     if (typeof item === "string") answers[key] = item.slice(0, 2000);
   }

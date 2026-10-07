@@ -170,7 +170,7 @@ const steps = [
     number: 12,
     type: "multi",
     title: "What green-fee range are you generally comfortable with?",
-    hint: "Select all that apply",
+    help: "Green fees are paid by each member individually at the course. Select all that apply.",
     options: ["Under $50", "$50–$100", "$100–$150", "$150–$250", "$250+", "Depends on the course"],
   },
   {
@@ -250,7 +250,7 @@ function render() {
   const total = questionSteps().length;
   bar.style.width = step.number ? `${(step.number / total) * 100}%` : step.type === "welcome" ? "0%" : "100%";
 
-  const back = index > 0 && step.type !== "done"
+  const back = index > 0 && step.type !== "done" && step.type !== "payment"
     ? `<button class="back" type="button" data-back>Back</button>`
     : "";
 
@@ -270,9 +270,25 @@ function body(step) {
 
   if (step.type === "payment") {
     return `
-      <h1>Click below to finalize your payment and secure your spot in Business Golf Club.</h1>
-      <p class="help"><strong>Please use the same email for payment as the one you used on this form.</strong> After you join, we’ll match you with a small group in Greater Phoenix and send the course and tee time. The button will take you to our secure Stripe checkout page. Cancel anytime.</p>
-      <div class="actions"><a class="pay" id="pay" href="#">Complete Payment →</a></div>
+      <h1>You're a fit for Business Golf Club.</h1>
+      <p class="welcome">Complete your membership below and we’ll start looking for your first Phoenix / Scottsdale match.</p>
+      <p class="next-label">Your $39/month membership includes:</p>
+      <ul class="offer">
+        <li>Up to 2 curated matched rounds each month</li>
+        <li>Groups matched around your schedule, location, golf preferences, and business profile</li>
+        <li>No obligation to accept every round</li>
+      </ul>
+      <div class="guarantee">
+        <p class="guarantee-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="shield" d="M12 2.2 4.2 5.4v6.2c0 4.7 3.2 8.8 7.8 9.9 4.6-1.1 7.8-5.2 7.8-9.9V5.4L12 2.2z"/><path class="check" d="m8.2 12.1 2.4 2.4 5.1-5.3"/></svg> First Round Guarantee</p>
+        <p>If we can’t offer you a matched round within your first 30 days, we’ll refund your first month in full.</p>
+      </div>
+      <p class="help"><strong>Please use the same email at checkout that you entered on this form.</strong></p>
+      <div class="actions"><a class="pay" id="pay" href="#">Get Matched for My First Round</a></div>
+      <p class="cancel-note">Cancel anytime. No long-term commitment.</p>
+      <div class="founder-ask">
+        <img src="founder.png" alt="Pierce Patrick" />
+        <p><span>Questions before joining?</span> Text Pierce, the founder: <a href="tel:+16155427527">615-542-7527</a></p>
+      </div>
     `;
   }
 
@@ -484,8 +500,12 @@ function snapshot() {
   };
 }
 
+let checkoutStarted = false;
+
 function persist() {
-  const body = JSON.stringify(snapshot());
+  const payload = snapshot();
+  if (checkoutStarted) payload.checkoutStarted = true;
+  const body = JSON.stringify(payload);
   const blob = new Blob([body], { type: "application/json" });
   if (navigator.sendBeacon && navigator.sendBeacon("/api/application", blob)) return;
   fetch("/api/application", {
@@ -528,6 +548,8 @@ function wirePayment() {
     const reference = encodeURIComponent(sessionId);
     const join = CHECKOUT_URL.includes("?") ? "&" : "?";
     pay.href = `${CHECKOUT_URL}${join}prefilled_email=${email}&client_reference_id=${reference}`;
+    checkoutStarted = true;
+    persist();
     track("InitiateCheckout", { value: 39, currency: "USD" });
   });
 }

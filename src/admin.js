@@ -1,5 +1,5 @@
 const STATUSES = ["new", "contacted", "grouped"];
-const PROGRESS = ["all", "open", "payment", "paid", "not-ready"];
+const PROGRESS = ["all", "open", "payment", "checkout", "paid", "not-ready"];
 
 const STEP_LABELS = {
   welcome: "Welcome",
@@ -47,6 +47,7 @@ async function tablePage(request, env, ensureSchema) {
   const binds = [];
   if (progress === "open") where.push("completed = 0");
   if (progress === "payment") where.push("outcome = 'payment' AND paid = 0");
+  if (progress === "checkout") where.push("outcome = 'checkout' AND paid = 0");
   if (progress === "paid") where.push("paid = 1");
   if (progress === "not-ready") where.push("outcome = 'not-ready'");
   if (status !== "all") {
@@ -72,6 +73,7 @@ async function tablePage(request, env, ensureSchema) {
         ["all", "Everyone"],
         ["open", "Still filling out"],
         ["payment", "Reached payment"],
+        ["checkout", "Opened checkout"],
         ["paid", "Paid"],
         ["not-ready", "Not ready"],
       ])}</label>
@@ -102,9 +104,11 @@ function renderRow(row, filters) {
     ? "Paid"
     : row.outcome === "not-ready"
       ? "Not ready"
-      : row.completed
-        ? "Reached payment"
-        : `Stopped at ${STEP_LABELS[row.furthest_step] || row.furthest_step}`;
+      : row.outcome === "checkout"
+        ? "Opened checkout"
+        : row.completed
+          ? "Reached payment"
+          : `Stopped at ${STEP_LABELS[row.furthest_step] || row.furthest_step}`;
   const back = `/admin?progress=${encodeURIComponent(filters.progress)}&status=${encodeURIComponent(filters.status)}&area=${encodeURIComponent(filters.area)}`;
   const statusField = `<form method="post" action="/admin/status">
     <input type="hidden" name="session_id" value="${escapeHtml(row.session_id)}" />

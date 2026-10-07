@@ -111,7 +111,8 @@ async function saveApplication(request, env) {
   const completed = existing?.completed === 1 || body.completed ? 1 : 0;
   let outcome = existing?.outcome || "";
   if (completed && body.stepId === "not-ready") outcome = "not-ready";
-  if (completed && body.stepId === "payment") outcome = "payment";
+  else if (body.checkoutStarted || existing?.outcome === "checkout") outcome = "checkout";
+  else if (completed && body.stepId === "payment") outcome = "payment";
 
   await env.DB.prepare(
     `INSERT INTO applications (
@@ -127,7 +128,7 @@ async function saveApplication(request, env) {
       furthest_step = excluded.furthest_step,
       furthest_number = excluded.furthest_number,
       completed = excluded.completed,
-      outcome = excluded.outcome,
+      outcome = CASE WHEN applications.outcome = 'checkout' THEN 'checkout' ELSE excluded.outcome END,
       goals = CASE WHEN excluded.goals != '[]' THEN excluded.goals ELSE applications.goals END,
       gender = CASE WHEN excluded.gender != '' THEN excluded.gender ELSE applications.gender END,
       age = CASE WHEN excluded.age != '' THEN excluded.age ELSE applications.age END,

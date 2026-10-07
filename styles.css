@@ -308,6 +308,11 @@ h1,
   line-height: 1.75;
 }
 
+.legal a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .footer-links {
   display: flex;
   flex-direction: column;

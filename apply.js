@@ -536,6 +536,26 @@ function saveApplication() {
   localStorage.setItem("bgc-application", JSON.stringify(payload));
 }
 
+function resumePayment() {
+  if (localStorage.getItem("bgc-paid") === "1") return false;
+  let saved;
+  try {
+    saved = JSON.parse(localStorage.getItem("bgc-application") || "null");
+  } catch {
+    return false;
+  }
+  if (!saved || typeof saved !== "object") return false;
+  for (const [key, value] of Object.entries(saved)) {
+    if (key === "submittedAt") continue;
+    answers[key] = value;
+  }
+  index = steps.findIndex((item) => item.id === "payment");
+  render();
+  wirePayment();
+  persist();
+  return true;
+}
+
 function wirePayment() {
   const pay = document.getElementById("pay");
   if (!pay) return;
@@ -598,11 +618,12 @@ if (returnedFromCheckout) {
     <p class="help">Questions? Email us anytime at <a href="mailto:hello@businessgolf.club">hello@businessgolf.club</a>.</p>
     <div class="actions"><a class="pay" href="index.html">Back to the club</a></div>
   </section>`;
-  if (!sessionStorage.getItem("bgc-purchase-tracked")) {
+  if (!localStorage.getItem("bgc-paid") && !sessionStorage.getItem("bgc-purchase-tracked")) {
     track("Purchase", { value: 39, currency: "USD" });
     sessionStorage.setItem("bgc-purchase-tracked", "1");
   }
-} else {
+  localStorage.setItem("bgc-paid", "1");
+} else if (!resumePayment()) {
   render();
   persist();
 }

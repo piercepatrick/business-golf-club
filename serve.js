@@ -18,6 +18,19 @@ const types = {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://localhost:${port}`);
+  if (url.pathname === "/api/application" && req.method === "GET") {
+    const sessionId = url.searchParams.get("session") || "";
+    let saved = {};
+    try {
+      saved = JSON.parse(fs.readFileSync(path.join(root, "local-applications.json"), "utf8"));
+    } catch {
+      saved = {};
+    }
+    const row = saved[sessionId];
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify({ paid: Number(row?.paid) === 1 }));
+    return;
+  }
   if (url.pathname === "/api/application" && req.method === "POST") {
     const chunks = [];
     req.on("data", (chunk) => chunks.push(chunk));

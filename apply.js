@@ -536,6 +536,43 @@ function saveApplication() {
   localStorage.setItem("bgc-application", JSON.stringify(payload));
 }
 
+async function alreadyPaid() {
+  if (localStorage.getItem("bgc-paid") === "1") return true;
+  if (!localStorage.getItem("bgc-application")) return false;
+  try {
+    const response = await fetch(`/api/application?session=${encodeURIComponent(sessionId)}`);
+    if (!response.ok) return false;
+    const data = await response.json();
+    if (data.paid) {
+      localStorage.setItem("bgc-paid", "1");
+      return true;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+function showConfirmation(trackPurchase) {
+  bar.style.width = "100%";
+  app.innerHTML = `<section class="step">
+    <h1>You're in.</h1>
+    <p class="welcome">Welcome to Business Golf Club.</p>
+    <p class="help">Your membership is active, and we have everything we need to start matching you for upcoming rounds.</p>
+    <p class="next-label">What happens next:</p>
+    <p class="help">We'll review your preferences and reach out when we have a round that fits your schedule, location, budget, and golf preferences.</p>
+    <p class="help">You'll receive the course, tee time, and your group details before each round.</p>
+    <p class="help">Your first round is coming soon.</p>
+    <p class="help">Questions? Email us anytime at <a href="mailto:hello@businessgolf.club">hello@businessgolf.club</a>.</p>
+    <div class="actions"><a class="pay" href="index.html">Back to the club</a></div>
+  </section>`;
+  if (trackPurchase && !localStorage.getItem("bgc-paid") && !sessionStorage.getItem("bgc-purchase-tracked")) {
+    track("Purchase", { value: 39, currency: "USD" });
+    sessionStorage.setItem("bgc-purchase-tracked", "1");
+  }
+  localStorage.setItem("bgc-paid", "1");
+}
+
 function resumePayment() {
   if (localStorage.getItem("bgc-paid") === "1") return false;
   let saved;
@@ -605,25 +642,18 @@ document.addEventListener("keydown", (event) => {
 });
 
 const returnedFromCheckout = new URLSearchParams(location.search).get("paid") === "1";
-if (returnedFromCheckout) {
-  bar.style.width = "100%";
-  app.innerHTML = `<section class="step">
-    <h1>You're in.</h1>
-    <p class="welcome">Welcome to Business Golf Club.</p>
-    <p class="help">Your membership is active, and we have everything we need to start matching you for upcoming rounds.</p>
-    <p class="next-label">What happens next:</p>
-    <p class="help">We'll review your preferences and reach out when we have a round that fits your schedule, location, budget, and golf preferences.</p>
-    <p class="help">You'll receive the course, tee time, and your group details before each round.</p>
-    <p class="help">Your first round is coming soon.</p>
-    <p class="help">Questions? Email us anytime at <a href="mailto:hello@businessgolf.club">hello@businessgolf.club</a>.</p>
-    <div class="actions"><a class="pay" href="index.html">Back to the club</a></div>
-  </section>`;
-  if (!localStorage.getItem("bgc-paid") && !sessionStorage.getItem("bgc-purchase-tracked")) {
-    track("Purchase", { value: 39, currency: "USD" });
-    sessionStorage.setItem("bgc-purchase-tracked", "1");
+async function start() {
+  if (returnedFromCheckout) {
+    showConfirmation(true);
+    return;
   }
-  localStorage.setItem("bgc-paid", "1");
-} else if (!resumePayment()) {
-  render();
-  persist();
+  if (await alreadyPaid()) {
+    showConfirmation(false);
+    return;
+  }
+  if (!resumePayment()) {
+    render();
+    persist();
+  }
 }
+start();

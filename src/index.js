@@ -66,6 +66,7 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/api/application") {
       if (request.method === "POST") return saveApplication(request, env);
+      if (request.method === "GET") return applicationStatus(url, env);
       return new Response("Method not allowed", { status: 405 });
     }
     if (url.pathname === "/api/stripe/webhook") {
@@ -78,6 +79,16 @@ export default {
     return env.ASSETS.fetch(request);
   },
 };
+
+async function applicationStatus(url, env) {
+  const sessionId = url.searchParams.get("session") || "";
+  if (!isUuid(sessionId)) return json({ error: "Invalid application" }, 400);
+  await ensureSchema(env);
+  const row = await env.DB.prepare(
+    "SELECT paid FROM applications WHERE session_id = ?"
+  ).bind(sessionId).first();
+  return json({ paid: Number(row?.paid) === 1 });
+}
 
 async function saveApplication(request, env) {
   let body;

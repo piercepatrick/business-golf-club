@@ -522,9 +522,10 @@ function persistSoon() {
   saveTimer = setTimeout(persist, 400);
 }
 
-function track(eventName, params) {
+function track(eventName, params, eventId) {
   if (typeof fbq !== "function") return;
-  fbq("track", eventName, params);
+  if (eventId) fbq("track", eventName, params, { eventID: eventId });
+  else fbq("track", eventName, params);
 }
 
 function trackCustom(eventName) {
@@ -568,7 +569,7 @@ function showConfirmation(trackPurchase) {
     <div class="actions"><a class="pay" href="index.html">Back to the club</a></div>
   </section>`;
   if (trackPurchase && !localStorage.getItem("bgc-paid") && !sessionStorage.getItem("bgc-purchase-tracked")) {
-    track("Purchase", { value: 29, currency: "USD" });
+    track("Purchase", { value: 29, currency: "USD" }, checkoutSessionId);
     sessionStorage.setItem("bgc-purchase-tracked", "1");
   }
   localStorage.setItem("bgc-paid", "1");
@@ -642,7 +643,9 @@ document.addEventListener("keydown", (event) => {
   goNext();
 });
 
-const returnedFromCheckout = new URLSearchParams(location.search).get("paid") === "1";
+const pageParams = new URLSearchParams(location.search);
+const returnedFromCheckout = pageParams.get("paid") === "1";
+const checkoutSessionId = pageParams.get("session_id") || "";
 const localReview = location.hostname === "localhost" || location.hostname === "127.0.0.1";
 async function start() {
   if (localReview && new URLSearchParams(location.search).get("review") === "payment") {

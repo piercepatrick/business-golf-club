@@ -175,6 +175,19 @@ h1 {
   stroke-linejoin: round;
 }
 
+.spots {
+  display: inline-block;
+  margin: 0 0 1rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #aa8d52;
+  border-radius: 999px;
+  background: var(--card);
+  color: #040033;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .cancel-note {
   margin: 0.85rem 0 0;
   color: #4a463f;

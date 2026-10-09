@@ -1,5 +1,5 @@
-// Live checkout for the $39/month founding membership.
-const CHECKOUT_URL = "https://buy.stripe.com/00weVfdeb26C9C469Pbo400";
+// Founding membership: free for 4 weeks, then $29 every 4 weeks. Card required.
+const CHECKOUT_URL = "https://buy.stripe.com/8x2eVfgqndPk8y0gOtbo402";
 
 const steps = [
   {
@@ -201,7 +201,7 @@ const steps = [
     id: "commitment",
     number: 14,
     type: "single",
-    title: "Are you generally able to play 1–2 rounds with other business owners each month?",
+    title: "Are you generally able to play one round with other business owners every 4 weeks?",
     options: [
       "Yes — I'd love to be an active member.",
       "No, and because I can't commit to being an active member I won't apply right now.",
@@ -215,7 +215,7 @@ const steps = [
     id: "not-ready",
     type: "done",
     title: "Thanks for telling us.",
-    help: "Business Golf Club works best when members can play a couple of times a month. When your schedule opens up, you can apply again.",
+    help: "Business Golf Club works best when members can play about once every 4 weeks. When your schedule opens up, you can apply again.",
   },
 ];
 
@@ -270,21 +270,22 @@ function body(step) {
 
   if (step.type === "payment") {
     return `
+      <p class="spots">25 Free Trial Spots Available</p>
       <h1>You're a fit for Business Golf Club.</h1>
-      <p class="welcome">Complete your membership below and we’ll start looking for your first Phoenix / Scottsdale match.</p>
-      <p class="next-label">Your $39/month membership includes:</p>
+      <p class="welcome">Complete your membership below and we’ll start looking for your first Phoenix / Scottsdale pairing.</p>
+      <p class="next-label">Free for 4 weeks. Then $29.</p>
       <ul class="offer">
-        <li>Up to 2 curated matched rounds each month</li>
+        <li>One arranged pairing</li>
         <li>Groups matched around your schedule, location, golf preferences, and business profile</li>
-        <li>No obligation to accept every round</li>
+        <li>You choose which rounds to join</li>
       </ul>
       <div class="guarantee">
         <p class="guarantee-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="shield" d="M12 2.2 4.2 5.4v6.2c0 4.7 3.2 8.8 7.8 9.9 4.6-1.1 7.8-5.2 7.8-9.9V5.4L12 2.2z"/><path class="check" d="m8.2 12.1 2.4 2.4 5.1-5.3"/></svg> First Round Guarantee</p>
-        <p>If we can’t offer you a matched round within your first 30 days, we’ll refund your first month in full.</p>
+        <p>If we can’t offer you a matched pairing and you’ve been charged, we’ll refund it.</p>
       </div>
       <p class="help"><strong>Please use the same email at checkout that you entered on this form.</strong></p>
       <div class="actions"><a class="pay" id="pay" href="#">Get Matched for My First Round</a></div>
-      <p class="cancel-note">Cancel anytime. No long-term commitment.</p>
+      <p class="cancel-note">Cancel anytime.</p>
       <div class="founder-ask">
         <img src="founder.png" alt="Pierce Patrick" />
         <p><span>Questions before joining?</span> Text Pierce, the founder: <a href="tel:+16155427527">615-542-7527</a></p>
@@ -567,7 +568,7 @@ function showConfirmation(trackPurchase) {
     <div class="actions"><a class="pay" href="index.html">Back to the club</a></div>
   </section>`;
   if (trackPurchase && !localStorage.getItem("bgc-paid") && !sessionStorage.getItem("bgc-purchase-tracked")) {
-    track("Purchase", { value: 39, currency: "USD" });
+    track("Purchase", { value: 29, currency: "USD" });
     sessionStorage.setItem("bgc-purchase-tracked", "1");
   }
   localStorage.setItem("bgc-paid", "1");
@@ -607,7 +608,7 @@ function wirePayment() {
     pay.href = `${CHECKOUT_URL}${join}prefilled_email=${email}&client_reference_id=${reference}`;
     checkoutStarted = true;
     persist();
-    track("InitiateCheckout", { value: 39, currency: "USD" });
+    track("InitiateCheckout", { value: 29, currency: "USD" });
   });
 }
 
@@ -642,7 +643,14 @@ document.addEventListener("keydown", (event) => {
 });
 
 const returnedFromCheckout = new URLSearchParams(location.search).get("paid") === "1";
+const localReview = location.hostname === "localhost" || location.hostname === "127.0.0.1";
 async function start() {
+  if (localReview && new URLSearchParams(location.search).get("review") === "payment") {
+    index = steps.findIndex((item) => item.id === "payment");
+    render();
+    wirePayment();
+    return;
+  }
   if (returnedFromCheckout) {
     showConfirmation(true);
     return;
